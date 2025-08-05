@@ -15,6 +15,7 @@ namespace ArithmeticaRomana.Core.Unit.Tests.Parser
         [InlineData("CMXCIX", 999)] // Largest subtraction combination below 1000 (900 + 90 + 9)
         [InlineData("MMXIV", 2014)] // A common modern year (2000 + 10 + 4)
         [InlineData("MMMCMXCIX", 3999)] // The largest representable value in standard Roman numerals
+        [InlineData("XIX", 19)]
         public void Parse_ValidRomanNumeral_ReturnsTrueAndCorrectValue(string input, int expectedValue)
         {
             // Arrange
@@ -40,6 +41,7 @@ namespace ArithmeticaRomana.Core.Unit.Tests.Parser
         [InlineData(" ", RomanParserError.MalformedInput)] // Invalid: Empty string
         [InlineData("K", RomanParserError.MalformedInput)] // Invalid: Non-Roman numeral character
         [InlineData("MCMXCVXI", RomanParserError.InvalidSubtraction)] // Invalid: Incorrect sequence or invalid subtraction/addition (e.g., XI is 11, but VXI is invalid in this context)
+        [InlineData("VIV", RomanParserError.MalformedInput)]
         public void Parse_InvalidRomanNumeral_ReturnsCorrectError(string input, RomanParserError error)
         {
             // Arrange

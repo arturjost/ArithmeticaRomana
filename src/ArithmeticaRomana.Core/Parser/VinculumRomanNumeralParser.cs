@@ -112,7 +112,7 @@ namespace ArithmeticaRomana.Core.Parser
                     break;
             }
 
-            return [.. tokens.OrderBy(x => x.position).Select(x => x.token)];
+            return [.. tokens.Where(token => token.token != null).OrderBy(x => x.position).Select(x => x.token)];
         }
 
         /// <summary>
@@ -167,21 +167,28 @@ namespace ArithmeticaRomana.Core.Parser
                             error = new RomanParserResult(RomanParserError.InvalidSubtraction, $"'{currentToken.RomanNumeral}' can't be subtracted from '{nextToken.RomanNumeral}'.");
                             return false;
                         }
-
                         // V, L, D can't be placed after a subtraction
                         if (lookaheadToken?.RomanNumeral == currentToken.RomanNumeral)
                         {
-                            error = new RomanParserResult(RomanParserError.InvalidSubtraction, $"'{nextToken.RomanNumeral}' can't be placed after '{currentToken.RomanNumeral}{lookaheadToken.RomanNumeral}'.");
+                            error = new RomanParserResult(RomanParserError.InvalidSubtraction, $"'{lookaheadToken.RomanNumeral}' can't be placed after '{currentToken.RomanNumeral}{nextToken.RomanNumeral}'.");
                             return false;
                         }
                     }             
                 }
 
                 // We also need to check if the lookaheadToken is bigger than our currentToken, bigger values can't follow
-                if (lookaheadToken?.NumeralValue > currentToken.NumeralValue)
+                if (lookaheadToken?.NumeralValue >= currentToken.NumeralValue)
                 {
-                    error = new RomanParserResult(RomanParserError.MalformedInput, $"'{lookaheadToken.RomanNumeral}' can't follow after '{currentToken.RomanNumeral}{nextToken?.RomanNumeral}'.");
-                    return false;
+                    if(lookaheadToken?.NumeralValue > currentToken.NumeralValue)
+                    {
+                        error = new RomanParserResult(RomanParserError.MalformedInput, $"'{lookaheadToken.RomanNumeral}' can't follow after '{currentToken.RomanNumeral}{nextToken?.RomanNumeral}'.");
+                        return false;
+                    }
+                    else if(lookaheadToken?.BaseValue == 5)
+                    {
+                        error = new RomanParserResult(RomanParserError.MalformedInput, $"'{lookaheadToken.RomanNumeral}' can't follow after '{currentToken.RomanNumeral}{nextToken?.RomanNumeral}'.");
+                        return false;
+                    }
                 }
 
                 // If the current token is the same as the previous token, we need to check the repetition rules

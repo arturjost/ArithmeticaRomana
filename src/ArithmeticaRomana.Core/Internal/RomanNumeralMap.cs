@@ -18,46 +18,98 @@ namespace ArithmeticaRomana.Core.Internal
         /// <para>Important: provide tokens from small to big. Correct: "I", "V", "X" Wrong: "M", "D", "C"</para>
         /// </summary>
         /// <param name="romanNumerals">"I", "V", "X", etc.</param>
-        public RomanNumeralMap(params string[] romanNumerals)
+        /// <param name="modifier">
+        /// instead of providing all different numerals, you can provide the base numerals and the special modifier of <br />
+        /// the specific notation for example for Vinculum: \u0305
+        /// </param>
+        public RomanNumeralMap(string[] romanNumerals, string? modifier = null)
         {
+            if (romanNumerals.Length == 0)
+            {
+                _baseRomanTokens = ImmutableList<RomanNumeralToken>.Empty;
+                _romanTokens = ImmutableList<RomanNumeralToken>.Empty;
+                return;
+            }
+
             List<RomanNumeralToken> baseTokens = [];
             List<RomanNumeralToken> subtractionTokens = [];
+
+            // this loop for base tokens
+            int modifierLoop = 0;
             int value = 1;
-            string subtractionNumeral = string.Empty;
-            int subtractionValue = 0;
             for (int i = 0; i < romanNumerals.Length; i++)
             {
-                if (i == 0)
-                {
-                    subtractionNumeral = romanNumerals[i];
-                    subtractionValue = 1;
-                }
+                // add the provided base tokens, if we are in a modifer loop we will add the token + modifier
+                var romanNumeral = AddModifier(romanNumerals[i], modifier, modifierLoop);
+                baseTokens.Add(new RomanNumeralToken(romanNumeral, value));
 
-                baseTokens.Add(new RomanNumeralToken(romanNumerals[i], value));
-
-                // start adding IV, IX, XL, XC, CD, CM  
-                // stop if we reach the end of the array
-                if (i < romanNumerals.Length - 1)
-                {
-                    string numeral = subtractionNumeral + romanNumerals[i + 1];
-                    subtractionTokens.Add(new RomanNumeralToken(numeral,
-                        (value * (i % 2 == 0 ? 5 : 2)) - subtractionValue));
-                }
-
+                // we multiply to get to the next value in the progression
                 if (i % 2 == 0)
-                {
                     value *= 5; // V, L, D, etc...
-                }
                 else
-                {
                     value *= 2; // X, C, M, etc...
-                    subtractionValue = value;
-                    subtractionNumeral = i + 1 < romanNumerals.Length ? romanNumerals[i + 1] : string.Empty;
+
+                // if a modifer is provided we will need to generate all other base tokens
+                if (i == romanNumerals.Length - 1 && modifier != null && modifierLoop < 2)
+                {
+                    modifierLoop += 1;
+                    baseTokens.Add(new RomanNumeralToken(AddModifier(romanNumerals[0], modifier, modifierLoop), value / 5));
+                    i = 0;
                 }
             }
 
-            _baseRomanTokens = baseTokens.OrderByDescending(token => token.NumeralValue).ToImmutableList();
-            _romanTokens = baseTokens.Concat(subtractionTokens).OrderByDescending(token => token.NumeralValue).ToImmutableList();
+            // now for the special subtraction tokens IV, IX etc.
+            int modifierSize = modifierLoop;
+            string subtractionNumeral = romanNumerals[0];
+            value = 1;
+            int subtractionValue = value;
+            for (int i = 0; i < romanNumerals.Length - 1; i++)
+            {
+                // we multiply to get to the next value in the progression
+                if (i % 2 == 0)
+                {
+                    value *= 5;
+                    subtractionTokens.Add(new RomanNumeralToken(subtractionNumeral + AddModifier(romanNumerals[i + 1], modifier, modifierSize - modifierLoop), (value - subtractionValue)));
+                }
+                else if (i != 0)
+                {
+                    value *= 2;
+                    int modifierCount = modifierSize - modifierLoop;
+                    subtractionTokens.Add(new RomanNumeralToken(subtractionNumeral + AddModifier(romanNumerals[i + 1], modifier, modifierSize - modifierLoop), (value - subtractionValue)));
+
+                    subtractionNumeral = i == romanNumerals.Length - 2 ? AddModifier(romanNumerals[0], modifier, modifierSize + 1 - modifierLoop) : AddModifier(romanNumerals[i + 1], modifier, modifierSize - modifierLoop);
+                    subtractionValue = value;
+                }
+
+                if (i == romanNumerals.Length - 2 && modifierLoop > 0)
+                {
+                    modifierLoop--;
+                    i = -1;
+                }
+            }
+
+            _baseRomanTokens = baseTokens.OrderByDescending(token => token.NumeralValue).ThenBy(x => x.RomanNumeral).ToImmutableList();
+            _romanTokens = baseTokens.Concat(subtractionTokens).OrderByDescending(token => token.NumeralValue).ThenBy(x => x.RomanNumeral).ToImmutableList();
+        }
+
+        /// <summary>
+        /// Adds the modifier to a numeral as many times as specified in <paramref name="count"/>.
+        /// </summary>
+        /// <param name="numeral">The Roman numeral</param>
+        /// <param name="modifier">Modifier to add</param>
+        /// <param name="count">How many times should the modifier be added?</param>
+        /// <returns>Modified Roman numeral</returns>
+        private static string AddModifier(string numeral, string? modifier, int count)
+        {
+            if (modifier is null || count == 0)
+                return numeral;
+
+            string result = numeral;
+            for (int i = 0; i < count; i++)
+            {
+                result += modifier;
+            }
+            return result;
         }
 
         public IEnumerable<RomanNumeralToken> BaseTokensByValue()
