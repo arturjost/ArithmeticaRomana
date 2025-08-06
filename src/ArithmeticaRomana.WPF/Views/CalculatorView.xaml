@@ -1,0 +1,34 @@
+﻿<UserControl
+    x:Class="ArithmeticaRomana.WPF.Views.CalculatorView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ArithmeticaRomana.WPF.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:ArithmeticaRomana.WPF.ViewModels"
+    xmlns:views="clr-namespace:ArithmeticaRomana.WPF.Views"
+    x:Name="Calculator"
+    d:Height="700"
+    d:Width="500"
+    mc:Ignorable="d">
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.Resources>
+            <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        </Grid.Resources>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="AUTO" />
+            </Grid.RowDefinitions>
+            <Viewbox Height="200" Grid.Row="0" HorizontalAlignment="Right">
+                <views:DisplayView ViewModel="{Binding Display}" />
+            </Viewbox>
+            <Viewbox Grid.Row="1">
+                <Grid Width="500" Height="500">
+                    <views:ArabicKeypadView SendInputCommand="{Binding ReceiveInputCommand}" Visibility="{Binding ArabicMode, Converter={StaticResource BoolToVis}}" />
+                    <views:RomanKeypadView SendInputCommand="{Binding ReceiveInputCommand}" Visibility="{Binding RomanMode, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+            </Viewbox>
+        </Grid>
+    </Grid>
+</UserControl>

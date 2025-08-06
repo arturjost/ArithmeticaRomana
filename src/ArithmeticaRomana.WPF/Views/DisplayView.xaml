@@ -1,0 +1,41 @@
+﻿<UserControl
+    x:Class="ArithmeticaRomana.WPF.Views.DisplayView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ArithmeticaRomana.WPF.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="200"
+    d:DesignWidth="500"
+    x:Name="Display"
+    mc:Ignorable="d">
+    <StackPanel             MinWidth="500"
+            MaxWidth="500" DataContext="{Binding Path=ViewModel, ElementName=Display}"
+        Margin="20"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Bottom">
+        <TextBlock
+            HorizontalAlignment="Right"
+            FontSize="30"
+            Foreground="{DynamicResource SecondaryTextBrush}"
+            TextWrapping="WrapWithOverflow">
+            <Run d:Text="MDCLXVI" Text="{Binding LeftDisplayText}" />
+            <Run d:Text="+" Text="{Binding OperationDisplayText}" />
+            <Run d:Text="MDCLXVI" Text="{Binding RightDisplayText}" />
+        </TextBlock>
+        <TextBlock
+            HorizontalAlignment="Right"
+            d:Text="1566"
+            FontSize="50"
+            Foreground="{DynamicResource PrimaryTextBrush}"
+            Text="{Binding MainDisplayText}"
+            TextWrapping="Wrap" />
+        <TextBlock
+            HorizontalAlignment="Right"
+            d:Text="ERROR"
+            FontSize="30"
+            Foreground="{DynamicResource SecondaryTextBrush}"
+            Text="{Binding ErrorDisplayText}"
+            TextWrapping="Wrap" />
+    </StackPanel>
+</UserControl>

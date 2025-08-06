@@ -68,7 +68,7 @@ namespace ArithmeticaRomana.Core.Parser
                 // We initalize the input as the currentSpan foreach new interation
                 // We also need the RomanNumeral string as a span for comparison example: M, IV, etc.. 
                 // An offset is requiered, because we want to remove parts from the span
-                ReadOnlySpan<char> currrentSpan = input.AsSpan();
+                ReadOnlySpan<char> currrentSpan = remainingInput.AsSpan();
                 var numeralSpan = token.RomanNumeral.AsSpan();
                 int offset = 0;
                 do

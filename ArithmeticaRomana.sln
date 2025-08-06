@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{46E69810
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArithmeticaRomana.Core.Unit.Tests", "tests\ArithmeticaRomana.Core.Unit.Tests\ArithmeticaRomana.Core.Unit.Tests.csproj", "{D38CA134-9C10-45A7-819C-FEA91F44EDD4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArithmeticaRomana.WPF", "src\ArithmeticaRomana.WPF\ArithmeticaRomana.WPF.csproj", "{37581603-DE87-845C-7497-E7000003D8AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{D38CA134-9C10-45A7-819C-FEA91F44EDD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D38CA134-9C10-45A7-819C-FEA91F44EDD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D38CA134-9C10-45A7-819C-FEA91F44EDD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37581603-DE87-845C-7497-E7000003D8AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37581603-DE87-845C-7497-E7000003D8AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37581603-DE87-845C-7497-E7000003D8AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37581603-DE87-845C-7497-E7000003D8AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +38,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{FC4892CA-B091-4129-8DEF-82174763EA61} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{D38CA134-9C10-45A7-819C-FEA91F44EDD4} = {46E69810-D506-449E-8107-4324513951CC}
+		{37581603-DE87-845C-7497-E7000003D8AD} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {63A8716B-447C-4525-8B55-F55A69F2B3E8}
