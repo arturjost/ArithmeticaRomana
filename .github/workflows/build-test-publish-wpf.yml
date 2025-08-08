@@ -1,0 +1,53 @@
+# .github/workflows/dotnet.yml
+
+name: Build, Test & Publish
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    # 1. Checkout
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2. .NET 8 SDK
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # 3. Dependencies
+    - name: Restore dependencies
+      run: dotnet restore ArithmeticaRomana.sln
+
+    # 4. Build
+    - name: Build
+      run: dotnet build ArithmeticaRomana.sln --no-restore
+
+    # 5. Test
+    - name: Test
+      run: dotnet test ArithmeticaRomana.sln --no-build --verbosity normal
+
+    # 6. WPF
+    - name: Publish
+      run: >
+        dotnet publish "src/ArithmeticaRomana.WPF/ArithmeticaRomana.WPF.csproj" 
+        -c Release 
+        -r win-x64 
+        --self-contained true 
+        -p:PublishSingleFile=true 
+        -o ./publish
+
+    # 7. Artifact 
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ArithmeticaRomana-WPF
+        path: ./publish
