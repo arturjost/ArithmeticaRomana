@@ -1,12 +1,4 @@
 # ArithmeticaRomana.Core 🏛️
-Ever needed to bring a touch of ancient Rome to your .NET projects? `ArithmeticaRomana.Core` is a robust library designed for processing and manipulating Roman numerals.
-
-It's not just your basic `I` to `X`. This library supports values all the way up to `2,147,483,647` by using the *vinculum* notation (the overline that multiplies a numeral's value by 1,000).
-
-> For more information on Roman numerals, check out the Wikipedia article:
-> https://en.wikipedia.org/wiki/Roman_numerals
-
----
 
 ## Features
 

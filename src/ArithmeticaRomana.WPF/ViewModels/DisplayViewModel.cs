@@ -4,30 +4,46 @@ namespace ArithmeticaRomana.WPF.ViewModels
 {
     public class DisplayViewModel : NotifyPropertyChangedViewModel
     {
-        private string _leftDisplayText = string.Empty;
-        public string LeftDisplayText
+        // Left Side 
+        private string _leftArabic = string.Empty;
+        public string LeftArabic
         {
-            get { return _leftDisplayText; }
-            set { SetField(ref _leftDisplayText, value); }
+            get { return _leftArabic; }
+            set { SetField(ref _leftArabic, value); }
+        }
+
+        private string _leftRoman = string.Empty;
+        public string LeftRoman
+        {
+            get { return _leftRoman; }
+            set { SetField(ref _leftRoman, value); }
+        }
+
+        // Right Side
+        private string _rightArabic = string.Empty;
+        public string RightArabic
+        {
+            get { return _rightArabic; }
+            set { SetField(ref _rightArabic, value); }
+        }
+
+        private string _rightRoman = string.Empty;
+        public string RightRoman
+        {
+            get { return _rightRoman; }
+            set { SetField(ref _rightRoman, value); }
         }
 
 
-        private string _rightDisplayText = string.Empty;
-        public string RightDisplayText
+        private string _operation = string.Empty;
+        public string Operation
         {
-            get { return _rightDisplayText; }
-            set { SetField(ref _rightDisplayText, value); }
+            get { return _operation; }
+            set { SetField(ref _operation, value); }
         }
 
 
-        private string _operationDisplayText = string.Empty;
-        public string OperationDisplayText
-        {
-            get { return _operationDisplayText; }
-            set { SetField(ref _operationDisplayText, value); }
-        }
-
-
+        // Main Display
         private string _mainDisplayText = string.Empty;
         public string MainDisplayText
         {
@@ -35,6 +51,12 @@ namespace ArithmeticaRomana.WPF.ViewModels
             set { SetField(ref _mainDisplayText, value); }
         }
 
+        private string _bottomDisplayText = string.Empty;
+        public string BottomDisplayText
+        {
+            get { return _bottomDisplayText; }
+            set { SetField(ref _bottomDisplayText, value); }
+        }
 
         private string _errorDisplayText = string.Empty;
         public string ErrorDisplayText
@@ -50,30 +72,29 @@ namespace ArithmeticaRomana.WPF.ViewModels
             _formatter = formatter;
         }
 
-        private void Render(bool arabic, int value, int operationValue, string operation)
+        public void RenderLeftNumber(int value)
         {
-            if (operationValue > 0)
-                LeftDisplayText = $"({operationValue}) " + _formatter.Format(operationValue);
-            RightDisplayText = $"({value}) " + _formatter.Format(value);
-
+            LeftRoman = value > 0 ? _formatter.Format(value) : string.Empty;
+            LeftArabic = value == 0 ? string.Empty : value.ToString("N0");
+        }
+        public void RenderRightNumber(int value)
+        {
+            RightRoman = value > 0 ? _formatter.Format(value) : string.Empty;
+            RightArabic = value == 0 ? string.Empty : value.ToString("N0");
+        }
+        public void RenderMainDisplay(bool arabic, int value, string operation)
+        {
+            Operation = operation;
             if (arabic)
             {
-                MainDisplayText = value.ToString();
-                OperationDisplayText = operation;
+                MainDisplayText = value.ToString("N0");
+                BottomDisplayText = _formatter.Format(value);
             }
             else
             {
                 MainDisplayText = _formatter.Format(value);
-                OperationDisplayText = operation;
+                BottomDisplayText = value.ToString("N0");
             }
-        }
-        public void RenderArabic(int value, int operationValue, string operation)
-        {
-            Render(true, value, operationValue, operation);
-        }
-        public void RenderRoman(int value, int operationValue, string operation)
-        {
-            Render(false, value, operationValue, operation);
         }
         public void RenderError(string error)
         {
@@ -85,10 +106,13 @@ namespace ArithmeticaRomana.WPF.ViewModels
         }
         public void ClearDisplay()
         {
-            LeftDisplayText = string.Empty;
-            RightDisplayText = string.Empty;
-            OperationDisplayText = string.Empty;
+            LeftArabic = string.Empty;
+            LeftRoman = string.Empty;
+            RightArabic = string.Empty;
+            RightRoman = string.Empty;
+            Operation = string.Empty;
             MainDisplayText = string.Empty;
+            BottomDisplayText = string.Empty;
             ClearError();
         }
     }

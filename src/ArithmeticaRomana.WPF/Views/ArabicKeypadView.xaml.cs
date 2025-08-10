@@ -9,7 +9,7 @@ namespace ArithmeticaRomana.WPF.Views
     /// </summary>
     public partial class ArabicKeypadView : UserControl
     {
-        public static readonly DependencyProperty SendInputCommandProperty = DependencyProperty.Register(nameof(SendInputCommand), typeof(ICommand), typeof(ArabicKeypadView));
+        private static readonly DependencyProperty SendInputCommandProperty = DependencyProperty.Register(nameof(SendInputCommand), typeof(ICommand), typeof(ArabicKeypadView));
         public ICommand SendInputCommand
         {
             get => (ICommand)GetValue(SendInputCommandProperty);

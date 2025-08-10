@@ -5,37 +5,87 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:ArithmeticaRomana.WPF.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="200"
-    d:DesignWidth="500"
     x:Name="Display"
+    d:DesignHeight="300"
+    d:DesignWidth="500"
     mc:Ignorable="d">
-    <StackPanel             MinWidth="500"
-            MaxWidth="500" DataContext="{Binding Path=ViewModel, ElementName=Display}"
-        Margin="20"
-        HorizontalAlignment="Right"
-        VerticalAlignment="Bottom">
-        <TextBlock
-            HorizontalAlignment="Right"
-            FontSize="30"
-            Foreground="{DynamicResource SecondaryTextBrush}"
-            TextWrapping="WrapWithOverflow">
-            <Run d:Text="MDCLXVI" Text="{Binding LeftDisplayText}" />
-            <Run d:Text="+" Text="{Binding OperationDisplayText}" />
-            <Run d:Text="MDCLXVI" Text="{Binding RightDisplayText}" />
-        </TextBlock>
-        <TextBlock
-            HorizontalAlignment="Right"
-            d:Text="1566"
-            FontSize="50"
-            Foreground="{DynamicResource PrimaryTextBrush}"
-            Text="{Binding MainDisplayText}"
-            TextWrapping="Wrap" />
-        <TextBlock
-            HorizontalAlignment="Right"
-            d:Text="ERROR"
-            FontSize="30"
-            Foreground="{DynamicResource SecondaryTextBrush}"
-            Text="{Binding ErrorDisplayText}"
-            TextWrapping="Wrap" />
-    </StackPanel>
+    <Grid Margin="10" DataContext="{Binding Path=ViewModel, ElementName=Display}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="AUTO" />
+            <RowDefinition Height="AUTO" />
+            <RowDefinition Height="AUTO" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="AUTO" />
+                <ColumnDefinition Width="AUTO" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" HorizontalAlignment="Right">
+                <TextBlock
+                    d:Text="123456790"
+                    FontSize="20"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    Text="{Binding LeftArabic}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    d:Text="MCCXXXIVDLXVIIDCCCXC"
+                    FontSize="20"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    Text="{Binding LeftRoman}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+            <TextBlock
+                Grid.Column="1"
+                Margin="5,0,5,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                d:Text="+"
+                FontSize="20"
+                Foreground="{DynamicResource SecondaryTextBrush}"
+                Text="{Binding Operation}"
+                TextWrapping="Wrap" />
+            <StackPanel Grid.Column="2" HorizontalAlignment="Right">
+                <TextBlock
+                    d:Text="123456790"
+                    FontSize="20"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    Text="{Binding RightArabic}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    d:Text="MCCXXXIVDLXVIIDCCCXC"
+                    FontSize="20"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    Text="{Binding RightRoman}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="1">
+            <TextBlock
+                HorizontalAlignment="Right"
+                d:Text="1234567890"
+                FontSize="40"
+                Foreground="{DynamicResource PrimaryTextBrush}"
+                Text="{Binding MainDisplayText}"
+                TextWrapping="Wrap" />
+            <TextBlock
+                HorizontalAlignment="Right"
+                d:Text="MCCXXXIVDLXVIIDCCCXC"
+                FontSize="20"
+                Foreground="{DynamicResource SecondaryTextBrush}"
+                Text="{Binding BottomDisplayText}"
+                TextWrapping="Wrap" />
+        </StackPanel>
+        <Viewbox Grid.Row="2">
+            <TextBlock
+                Width="500"
+                VerticalAlignment="Top"
+                d:Text="ERROR"
+                FontSize="30"
+                Foreground="{DynamicResource SecondaryTextBrush}"
+                Text="{Binding ErrorDisplayText}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+        </Viewbox>
+    </Grid>
 </UserControl>

@@ -9,7 +9,7 @@ namespace ArithmeticaRomana.WPF.Views
     /// </summary>
     public partial class RomanKeypadView : UserControl
     {
-        public static readonly DependencyProperty SendInputCommandProperty = DependencyProperty.Register(nameof(SendInputCommand), typeof(ICommand), typeof(RomanKeypadView));
+        private static readonly DependencyProperty SendInputCommandProperty = DependencyProperty.Register(nameof(SendInputCommand), typeof(ICommand), typeof(RomanKeypadView));
         public ICommand SendInputCommand
         {
             get => (ICommand)GetValue(SendInputCommandProperty);

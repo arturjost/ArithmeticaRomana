@@ -20,38 +20,99 @@ namespace ArithmeticaRomana.Core.Parser
                 return new RomanParserResult(RomanParserError.MalformedInput, $"'{remainigInput}' can't be parsed.");
             }
 
-            // If rules are not valid, we return the error
-            if (!ValidateTokens(numerals, out IRomanParserResult? result))
+            // At this point we group our tokens into subtraction pairs to simplify validaiotn and calculation
+            // We also validate repetition rules and subtraction rules
+            List<RomanNumeralToken[]> pairs = [];
+            int repetition = 0;
+            for (int tokenIndex = 0; tokenIndex < numerals.Count; tokenIndex++)
             {
-                return result!;
-            }
-
-            // If we reach this point, we can calculate the total value of the roman numeral
-            int total = 0;
-            numerals.Reverse();
-            RomanNumeralToken? previousToken = null;
-            foreach(var currentToken in numerals)
-            {
-                if(previousToken?.NumeralValue > currentToken.NumeralValue)
+                RomanNumeralToken token = numerals[tokenIndex];
+                RomanNumeralToken? nextToken = tokenIndex < numerals.Count - 1 ? numerals[tokenIndex + 1] : null;
+                if (nextToken != null)
                 {
-                    total -= currentToken.NumeralValue;
+                    if (nextToken == token)
+                        repetition++;
+                    else
+                        repetition = 0;
+
+                    // Tokens with BaseValue 5 can't be repeated, you can't write VV, LL or DD
+                    // Other tokens with BaseValue 1 can be repeated up to three times
+                    if (token.BaseValue == 5 && repetition > 0)
+                        return new RomanParserResult(RomanParserError.InvalidRepetition, $"'{token.RomanNumeral}' can't be repeated.");
+                    else if (token.BaseValue == 1 && repetition > 2)
+                        return new RomanParserResult(RomanParserError.InvalidRepetition, $"'{token.RomanNumeral}' can only be repeated up to three times.");
+
+                    // subtraction pair found validate if subtraction is valid
+                    if (nextToken.NumeralValue > token.NumeralValue)
+                    {
+                        if ((token.BaseValue != 1) ||
+                           (token.BaseValue == 1 && nextToken.BaseValue == 1 && nextToken.Exponent - 1 != token.Exponent) ||
+                           (nextToken.BaseValue == 5 && nextToken.Exponent != token.Exponent))
+                            return new RomanParserResult(RomanParserError.InvalidSubtraction, $"'{token.RomanNumeral}' can't be suptracted from {nextToken.RomanNumeral}.");
+
+                        RomanNumeralToken[] pair = [token, nextToken];
+                        pairs.Add(pair);
+                        tokenIndex++;
+                    }
+                    else
+                    {
+                        pairs.Add([token]);
+                    }
                 }
                 else
                 {
-                    total += currentToken.NumeralValue;
+                    pairs.Add([token]);
                 }
-                previousToken = currentToken;
+            }
+
+            // Valid Roman numeral found, calculate value
+            int total = 0;
+            int value = 0;
+            int lastValue = 0;
+            RomanNumeralToken[]? lastAdd = null;
+            RomanNumeralToken[]? lastSub = null;
+            foreach (var pair in pairs)
+            {
+                if (pair.Length == 2)
+                {
+                    value = pair[1].NumeralValue - pair[0].NumeralValue;
+                    // You can't subtract and add the same value
+                    if (lastAdd != null && (lastAdd[0] == pair[0] || pair[1] == lastAdd[0] && lastAdd[0].BaseValue == 5))
+                    {
+                        return new RomanParserResult(RomanParserError.InvalidSequence, $"The numeral '{pair[0].RomanNumeral}{pair[1].RomanNumeral}' cannot follow after '{lastAdd[0].RomanNumeral}'.");
+                    }
+                    lastSub = pair;
+                }
+                else
+                {
+                    value = pair[0].NumeralValue;
+                    // Numerals with BaseValue 5 can't be repeated in the next addition
+                    if (lastSub != null && (lastSub[0] == pair[0] || lastSub[1] == pair[0] && lastSub[1].BaseValue == 5))
+                    {
+                        return new RomanParserResult(RomanParserError.InvalidSequence, $"The numeral '{pair[0].RomanNumeral}' cannot follow after '{lastSub[0].RomanNumeral}{lastSub[1].RomanNumeral}'.");
+                    }
+                    lastAdd = pair;
+                }
+                if (value > lastValue && lastValue > 0)
+                    return new RomanParserResult(RomanParserError.InvalidSequence, $"The value of each numeral must be less than or equal to the preceding one.");  
+                else
+                    lastValue = value;
+
+                if(total > (int.MaxValue - value))
+                    return new RomanParserResult(RomanParserError.OutOfRange, $"The number is too large to be represented.");
+
+                total += value;
             }
             return new RomanParserResult(new RomanNumeral(total));
         }
 
         /// <summary>
-        /// <para>This function helps us to tokenize our input, so we can validate afterwards.</para>
+        /// <para>This function helps us to tokenize our input.</para>
         /// <para>It also returns an out parameter, if the input could not be fully tokenized.</para>
         /// </summary>
-        /// <param name="input">Input to be tokenized</param>
-        /// <param name="remainingInput"></param>
-        /// <returns>A list of Roman numerals ordered by position found in the input</returns>
+        /// <param name="input">Input to be tokenized.</param>
+        /// <param name="remainingInput">Not recognized input.</param>
+        /// <returns>A list of Roman numerals ordered by position found in the input.</returns>
         private List<RomanNumeralToken> TokenizeInput(string input, out string remainingInput)
         {
             // We initalize our array with the length of the input, we can't have more tokens than that
@@ -60,7 +121,6 @@ namespace ArithmeticaRomana.Core.Parser
             // We iterate through our tokens, our map should give us out the tokens ordered by decending value
             // so we choose a greedy approach and get bigger tokens first, we might get conflicts with smaller 
             // tokens, but if we alreay placed a token at a specific position it should not be replaced
-            int arrayPos = 0;
             int pos = -1;
             remainingInput = input;
             foreach (var token in Internals.Vinculum.BaseTokensByValue())
@@ -68,22 +128,20 @@ namespace ArithmeticaRomana.Core.Parser
                 // We initalize the input as the currentSpan foreach new interation
                 // We also need the RomanNumeral string as a span for comparison example: M, IV, etc.. 
                 // An offset is requiered, because we want to remove parts from the span
-                ReadOnlySpan<char> currrentSpan = remainingInput.AsSpan();
+                ReadOnlySpan<char> currrentSpan = input.AsSpan();
                 var numeralSpan = token.RomanNumeral.AsSpan();
                 int offset = 0;
                 do
                 {
                     // does our currrentSpan have the numeral? Let's assume we search for "V" 
                     pos = currrentSpan.IndexOf(numeralSpan);
-
                     // great we found our token "V", that means we should add it to our token list
                     // the offset will be our currently offset + pos + length
                     if (pos > -1)
                     {
-                        if (tokens[arrayPos].token == null)
+                        if (tokens[pos + offset].token == null)
                         {
-                            tokens[arrayPos] = new(token, pos + offset);
-                            arrayPos++;
+                            tokens[pos + offset] = new(token, pos + offset);
                         }
                         offset += pos + numeralSpan.Length;
 
@@ -113,106 +171,6 @@ namespace ArithmeticaRomana.Core.Parser
             }
 
             return [.. tokens.Where(token => token.token != null).OrderBy(x => x.position).Select(x => x.token)];
-        }
-
-        /// <summary>
-        /// This function checks a given token list for subtraction and repetition rules
-        /// </summary>
-        /// <param name="tokens">The list of tokens to check</param>
-        /// <param name="error">If validation fails; provides detailed error message.</param>
-        /// <returns>if validation succeeded returns true; otherwise false</returns>
-        private bool ValidateTokens(List<RomanNumeralToken> tokens, out IRomanParserResult? error)
-        {
-            RomanNumeralToken currentToken;
-            RomanNumeralToken? nextToken = null;
-            RomanNumeralToken? lookaheadToken = null;
-
-            int repetitionCount = 0;
-            for (int i = 0; i < tokens.Count; i++)
-            {
-                currentToken = tokens[i];
-                nextToken = i < tokens.Count - 1 ? tokens[i + 1] : null;
-                lookaheadToken = i < tokens.Count - 2 ? tokens[i + 2] : null;
-                // if the current token value is smaller than the nextToken value, that means we are in a subtraction
-                // scenario, so we need to check if the subtraction rules are taken into account 
-                if (nextToken != null && nextToken.NumeralValue > currentToken.NumeralValue)
-                {
-                    // Only I (1), X (10), C (100) etc. can be subtracted, so only
-                    // tokens with BaseValue 1 can be subtracted from the next token 
-                    if (currentToken.BaseValue != 1)
-                    {
-                        error = new RomanParserResult(RomanParserError.InvalidSubtraction, $"'{currentToken.RomanNumeral}' can't be subtracted from '{nextToken.RomanNumeral}'.");
-                        return false;
-                    }
-
-                    // Check for valid subtraction pairs.
-                    // I can only subtract from V or X 
-                    // X can only subtract from L or C 
-                    // C can only subtract from D or M 
-                    // We can only subtract if the next token is Base 1 or Base 5
-                    // Valid: I (Exponent: 0) X (Exponent: 1), X (Exponent: 1) C (Exponent: 2)
-                    // Invalid: I (Exponent: 0) C (Exponent: 2), C (Exponent: 2) I (Exponent: 0)
-                    if (nextToken.BaseValue == 1)
-                    {
-                        if (currentToken.Exponent != nextToken.Exponent - 1)
-                        {
-                            error = new RomanParserResult(RomanParserError.InvalidSubtraction, $"'{currentToken.RomanNumeral}' can't be subtracted from '{nextToken.RomanNumeral}'.");
-                            return false;
-                        }
-                    }
-                    else if (nextToken.BaseValue == 5)
-                    {
-                        if (currentToken.Exponent != nextToken.Exponent)
-                        {
-                            error = new RomanParserResult(RomanParserError.InvalidSubtraction, $"'{currentToken.RomanNumeral}' can't be subtracted from '{nextToken.RomanNumeral}'.");
-                            return false;
-                        }
-                        // V, L, D can't be placed after a subtraction
-                        if (lookaheadToken?.RomanNumeral == currentToken.RomanNumeral)
-                        {
-                            error = new RomanParserResult(RomanParserError.InvalidSubtraction, $"'{lookaheadToken.RomanNumeral}' can't be placed after '{currentToken.RomanNumeral}{nextToken.RomanNumeral}'.");
-                            return false;
-                        }
-                    }             
-                }
-
-                // We also need to check if the lookaheadToken is bigger than our currentToken, bigger values can't follow
-                if (lookaheadToken?.NumeralValue >= currentToken.NumeralValue)
-                {
-                    if(lookaheadToken?.NumeralValue > currentToken.NumeralValue)
-                    {
-                        error = new RomanParserResult(RomanParserError.MalformedInput, $"'{lookaheadToken.RomanNumeral}' can't follow after '{currentToken.RomanNumeral}{nextToken?.RomanNumeral}'.");
-                        return false;
-                    }
-                    else if(lookaheadToken?.BaseValue == 5)
-                    {
-                        error = new RomanParserResult(RomanParserError.MalformedInput, $"'{lookaheadToken.RomanNumeral}' can't follow after '{currentToken.RomanNumeral}{nextToken?.RomanNumeral}'.");
-                        return false;
-                    }
-                }
-
-                // If the current token is the same as the previous token, we need to check the repetition rules
-                if (currentToken.RomanNumeral == nextToken?.RomanNumeral)
-                {
-                    repetitionCount++;
-                    if (currentToken.BaseValue == 5)
-                    {
-                        error = new RomanParserResult(RomanParserError.InvalidRepetition, $"'{currentToken.RomanNumeral}' can't be repeated.");
-                        return false; // V, L and D can not be repeated
-                    }
-                    else if (repetitionCount > 2)
-                    {
-                        error = new RomanParserResult(RomanParserError.InvalidRepetition, $"'{currentToken.RomanNumeral}' can only be repeated up to three times.");
-                        return false; // I, X, C and M can be used up to 3 times
-                    }
-                }
-                else
-                {
-                    repetitionCount = 0;
-                }
-            }
-            error = null;
-            return true;
         }
     }
 }

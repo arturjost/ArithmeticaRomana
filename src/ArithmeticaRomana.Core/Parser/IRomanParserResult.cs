@@ -8,6 +8,7 @@
         None,
         InvalidRepetition,
         InvalidSubtraction,
+        InvalidSequence,
         OutOfRange,
         MalformedInput
     }

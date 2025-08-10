@@ -2,6 +2,10 @@
 
 namespace ArithmeticaRomana.WPF.Commands
 {
+    /// <summary>
+    /// Implementation of <see cref="ICommand"/> 
+    /// </summary>
+    /// <typeparam name="T">Generic type argument</typeparam>
     public class DelegateCommand<T> : ICommand
     {
         private readonly Action<T?> _execute;

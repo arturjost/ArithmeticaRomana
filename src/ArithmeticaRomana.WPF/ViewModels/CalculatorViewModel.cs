@@ -29,7 +29,7 @@ namespace ArithmeticaRomana.WPF.ViewModels
             }
         }
 
-        private DisplayViewModel _display = new DisplayViewModel(_formatter);
+        private DisplayViewModel _display;
         public DisplayViewModel Display
         {
             get { return _display; }
@@ -38,17 +38,60 @@ namespace ArithmeticaRomana.WPF.ViewModels
 
         #endregion
 
-        private static readonly IRomanNumeralFormatter _formatter = new VinculumRomanNumeralFormatter();
-        private static readonly IRomanNumeralParser _parser = new VinculumRomanNumeralParser();
+        #region Calculator Logic
+        private string? _currentOperation = string.Empty;
+        private int? _lastValue;
+        private int? _operationValue;
+        private int _displayValue = 0;
 
-        private string _currentOperation = string.Empty;
-        private int _operationValue = 0;
-        private int _currentValue = 0;
-        private int _resultValue = 0;
-        public CalculatorViewModel()
+        private void SetOperation(string operation)
         {
-            RomanMode = true;
+            _currentOperation = operation ?? string.Empty;
+            _operationValue = null;
+            _lastValue = _displayValue;
+            lastInputs.Clear();
+            RenderDisplay();
+        }
 
+        public void SetOperationValue(int value)
+        {
+            _operationValue = value;
+        }
+
+        public void Evaluate()
+        {
+            if (string.IsNullOrWhiteSpace(_currentOperation))
+                return;
+
+            if (!_lastValue.HasValue || _operationValue.HasValue)
+                _lastValue = _displayValue;
+
+            if (!_operationValue.HasValue)
+                _operationValue = _displayValue;
+
+            _displayValue = _currentOperation switch
+            {
+                "+" => _lastValue.Value + _operationValue.Value,
+                "-" => _lastValue.Value - _operationValue.Value,
+                _ => _displayValue
+            };
+
+            if (!_operationValue.HasValue)
+                _operationValue = _lastValue;
+
+            RenderDisplay();
+        }
+
+        #endregion
+
+        private readonly IRomanNumeralFormatter _formatter;
+        private readonly IRomanNumeralParser _parser;
+        public CalculatorViewModel(IRomanNumeralFormatter formatter, IRomanNumeralParser parser)
+        {
+            _formatter = formatter;
+            _parser = parser;
+            _display = new DisplayViewModel(formatter);
+            RomanMode = false;
             _receiveInputCommand = new DelegateCommand<string>(input =>
             {
                 Debug.WriteLine(input);
@@ -63,7 +106,7 @@ namespace ArithmeticaRomana.WPF.ViewModels
                         SetOperation("-");
                         break;
                     case "Calculate":
-                        Calculate();
+                        Evaluate();
                         break;
                     case "Clear":
                         Clear();
@@ -75,40 +118,10 @@ namespace ArithmeticaRomana.WPF.ViewModels
                         Switch();
                         break;
                     default:
-                        lastInputs.Push(input);
-                        ProcessInput();
+                        ProcessInput(input);
                         break;
                 }
             });
-        }
-
-        private void SetOperation(string operation)
-        {
-            _currentOperation = operation;
-            _operationValue = _currentValue;
-            _currentValue = 0;
-            _resultValue = 0;
-            lastInputs.Clear();
-            RenderDisplay();
-        }
-
-        private void Calculate()
-        {
-            if (!string.IsNullOrWhiteSpace(_currentOperation))
-            {
-                switch (_currentOperation)
-                {
-                    case "+":
-                        if (_resultValue == 0)
-                            _resultValue = _currentValue + _operationValue;
-                        else
-                            _resultValue += _operationValue; ;
-                        break;
-                    case "-":
-                        _resultValue = _currentValue - _operationValue;
-                        break;
-                }
-            }
             RenderDisplay();
         }
 
@@ -119,7 +132,7 @@ namespace ArithmeticaRomana.WPF.ViewModels
             lastInputs.Clear();
             if (RomanMode)
             {
-                var result = _formatter.Format(_resultValue);
+                var result = _formatter.Format(_displayValue);
                 foreach (var ch in result)
                 {
                     lastInputs.Push(ch.ToString());
@@ -127,7 +140,7 @@ namespace ArithmeticaRomana.WPF.ViewModels
             }
             else
             {
-                var result = _resultValue.ToString();
+                var result = _displayValue.ToString();
                 foreach (var ch in result)
                 {
                     lastInputs.Push(ch.ToString());
@@ -139,72 +152,86 @@ namespace ArithmeticaRomana.WPF.ViewModels
 
         private void RenderDisplay()
         {
-            var mainValue = _resultValue > 0 ? _resultValue : _currentValue;
-            if (RomanMode)
-                Display.RenderRoman(mainValue, _operationValue, _currentOperation);
+            if (_lastValue.HasValue)
+                Display.RenderLeftNumber(_lastValue.Value);
+
+            if (_operationValue.HasValue)
+                Display.RenderRightNumber(_operationValue.Value);
             else
-                Display.RenderArabic(mainValue, _operationValue, _currentOperation);
+                Display.RenderRightNumber(0);
+
+            if (RomanMode)
+                Display.RenderMainDisplay(ArabicMode, _displayValue, _currentOperation!);
+            else
+                Display.RenderMainDisplay(ArabicMode, _displayValue, _currentOperation!);
         }
 
         private void Clear()
         {
-            _operationValue = 0;
-            _currentValue = 0;
-            _resultValue = 0;
+            _operationValue = null;
+            _lastValue = null;
+            _displayValue = 0;
             _currentOperation = string.Empty;
             lastInputs.Clear();
             Display.ClearDisplay();
+            RenderDisplay();
         }
 
 
-        private Stack<string> lastInputs = new Stack<string>();
-        private void DeleteLastInput()
+        private readonly Stack<string> lastInputs = new();
+        private void ProcessInput(string input)
         {
-            if (lastInputs.TryPop(out string? lastInput))
-            {
-                ProcessInput();
-            }
-        }
+            if (!string.IsNullOrWhiteSpace(input))
+                lastInputs.Push(input);
 
-        private void ProcessInput()
-        {
-            var newInput = string.Join("", lastInputs.Reverse());
-            if (newInput.Length == 0)
+            var currentInput = string.Join("", lastInputs.Reverse());
+            if (currentInput.Length == 0)
             {
-                _currentValue = 0;
+                _displayValue = 0;
+                lastInputs.Clear();
             }
             else if (ArabicMode)
             {
-                if (int.TryParse(newInput, out int newValue))
+                if (int.TryParse(currentInput, out int newValue))
                 {
-                    _currentValue = newValue;
+                    _displayValue = newValue;
                     Display.ClearError();
                 }
                 else
                 {
+                    DeleteLastInput();
                     Display.RenderError("The maximum possible value is 2.147.483.647!");
                 }
             }
             else if (RomanMode)
             {
-                var result = _parser.Parse(newInput);
+                var result = _parser.Parse(currentInput);
                 if (result.IsSuccess)
                 {
-                    _currentValue = result.RomanNumeral!.Value.AsInteger;
+                    _displayValue = result.RomanNumeral!.Value.AsInteger;
                     Display.ClearError();
                 }
                 else
                 {
+                    DeleteLastInput();
                     Display.RenderError(result.ErrorMessage!);
                 }
             }
-            else if (newInput.Length > 0)
+            else if (currentInput.Length > 0)
             {
-                _currentValue = int.MaxValue;
+                _displayValue = int.MaxValue;
             }
-            _resultValue = 0;
+
             RenderDisplay();
         }
+        private void DeleteLastInput()
+        {
+            if (lastInputs.TryPop(out string? _))
+            {
+                ProcessInput(string.Empty);
+            }
+        }
+
 
         // Commands
         private DelegateCommand<string> _receiveInputCommand;

@@ -9,7 +9,7 @@ namespace ArithmeticaRomana.WPF.Views
     /// </summary>
     public partial class DisplayView : UserControl
     {
-        public static DependencyProperty ViewModelProperty = DependencyProperty.Register(nameof(ViewModel), typeof(DisplayViewModel), typeof(DisplayView));
+        private static DependencyProperty ViewModelProperty = DependencyProperty.Register(nameof(ViewModel), typeof(DisplayViewModel), typeof(DisplayView));
         public DisplayViewModel ViewModel
         {
             get => (DisplayViewModel)GetValue(ViewModelProperty);

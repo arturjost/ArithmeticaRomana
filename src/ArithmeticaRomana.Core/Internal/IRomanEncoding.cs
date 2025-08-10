@@ -1,10 +1,9 @@
 ﻿namespace ArithmeticaRomana.Core.Internal
 {
     /// <summary>
-    /// Our interface for a Roman numeral map, this will help us with parsing and formatting
-    /// It will provide us with sorted tokens for different flavours like Vinculum or Apostrophus 
+    /// Interface that provide us with the sorted tokens for given encoding
     /// </summary>
-    internal interface IRomanNumeralMap
+    internal interface IRomanEncoding
     {
         /// <summary>
         /// This function returns only base values ordered by value.

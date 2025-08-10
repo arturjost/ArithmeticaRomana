@@ -8,7 +8,7 @@
     d:DesignHeight="500"
     d:DesignWidth="500"
     mc:Ignorable="d">
-    <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" Background="{StaticResource BackgroundBrush}">
+    <Grid Background="{StaticResource BackgroundBrush}" DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
@@ -37,7 +37,7 @@
             <Button
                 Command="{Binding SendInputCommand}"
                 CommandParameter="Addition"
-                Style="{StaticResource SecondaryButtonStyle}">
+                Style="{StaticResource PrimaryButtonStyle}">
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE948;" />
             </Button>
         </UniformGrid>
@@ -63,7 +63,7 @@
             <Button
                 Command="{Binding SendInputCommand}"
                 CommandParameter="Subtraction"
-                Style="{StaticResource SecondaryButtonStyle}">
+                Style="{StaticResource PrimaryButtonStyle}">
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE949;" />
             </Button>
         </UniformGrid>

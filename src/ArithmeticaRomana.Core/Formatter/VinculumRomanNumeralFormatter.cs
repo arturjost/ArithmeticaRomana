@@ -28,6 +28,7 @@ namespace ArithmeticaRomana.Core.Formatter
                 if (division > 0)
                 {
                     value -= romanNumeral.NumeralValue * division;
+                    // This line changes between I and M Representation, if uses in a subtraction, than it should be I
                     if(sb.Length == 0 && i > 0 && i < numerals.Count - 1 && romanNumeral.BaseValue == 1 && romanNumeral.Exponent % 3 == 0) 
                     {
                         romanNumeral = numerals[i + 1];

@@ -11,7 +11,7 @@
     d:Height="700"
     d:Width="500"
     mc:Ignorable="d">
-    <Grid Background="{StaticResource BackgroundBrush}">
+    <Grid Background="{StaticResource BackgroundBrush}" DataContext="{Binding Path=ViewModel, ElementName=Calculator}">
         <Grid.Resources>
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
         </Grid.Resources>
@@ -20,9 +20,15 @@
                 <RowDefinition />
                 <RowDefinition Height="AUTO" />
             </Grid.RowDefinitions>
-            <Viewbox Height="200" Grid.Row="0" HorizontalAlignment="Right">
-                <views:DisplayView ViewModel="{Binding Display}" />
-            </Viewbox>
+            <views:DisplayView
+                Grid.Row="0"
+                Height="300"
+                ViewModel="{Binding Display}" />
+            <!--<Viewbox
+
+                HorizontalAlignment="Right">
+
+            </Viewbox>-->
             <Viewbox Grid.Row="1">
                 <Grid Width="500" Height="500">
                     <views:ArabicKeypadView SendInputCommand="{Binding ReceiveInputCommand}" Visibility="{Binding ArabicMode, Converter={StaticResource BoolToVis}}" />

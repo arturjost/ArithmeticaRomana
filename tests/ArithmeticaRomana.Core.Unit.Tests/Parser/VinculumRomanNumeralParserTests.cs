@@ -34,14 +34,14 @@ namespace ArithmeticaRomana.Core.Unit.Tests.Parser
         [InlineData("IL", RomanParserError.InvalidSubtraction)] // Invalid: I can only be subtracted from V and X, not from L
         [InlineData("IC", RomanParserError.InvalidSubtraction)] // Invalid: I can only be subtracted from V and X, not from C
         [InlineData("VX", RomanParserError.InvalidSubtraction)] // Invalid: V cannot be used for subtraction
-        [InlineData("XLX", RomanParserError.InvalidSubtraction)] // Invalid: A smaller numeral cannot be placed between two larger identical numerals (e.g., 40 is XL, not XLX)
-        [InlineData("MCMXCIVX", RomanParserError.MalformedInput)] // Invalid: Multiple subtractions in sequence or incorrect order (e.g., IVX is invalid)
-        [InlineData("MDCLXVIIV", RomanParserError.MalformedInput)] // Invalid: Combination of IV and V is incorrect; a numeral cannot be simultaneously added and subtracted in such a way
+        [InlineData("XLX", RomanParserError.InvalidSequence)] // Invalid: A smaller numeral cannot be placed between two larger identical numerals (e.g., 40 is XL, not XLX)
+        [InlineData("MCMXCIVX", RomanParserError.InvalidSequence)] // Invalid: Multiple subtractions in sequence or incorrect order (e.g., IVX is invalid)
+        [InlineData("MDCLXVIIV", RomanParserError.InvalidSequence)] // Invalid: Combination of IV and V is incorrect; a numeral cannot be simultaneously added and subtracted in such a way
         [InlineData("MMMM", RomanParserError.InvalidRepetition)] // Invalid: Four M's are not allowed in standard notation (maximum is 3999, which is MMMCMXCIX)
         [InlineData(" ", RomanParserError.MalformedInput)] // Invalid: Empty string
         [InlineData("K", RomanParserError.MalformedInput)] // Invalid: Non-Roman numeral character
         [InlineData("MCMXCVXI", RomanParserError.InvalidSubtraction)] // Invalid: Incorrect sequence or invalid subtraction/addition (e.g., XI is 11, but VXI is invalid in this context)
-        [InlineData("VIV", RomanParserError.MalformedInput)]
+        [InlineData("VIV", RomanParserError.InvalidSequence)]
         public void Parse_InvalidRomanNumeral_ReturnsCorrectError(string input, RomanParserError error)
         {
             // Arrange
